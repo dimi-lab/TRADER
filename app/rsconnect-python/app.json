@@ -1,0 +1,12 @@
+{
+    "https://hsr-rsc-prod3.mayo.edu:1919/": {
+        "server_url": "https://hsr-rsc-prod3.mayo.edu:1919/",
+        "filename": "/Users/m149947/filipo_app/trader_streamlit/app",
+        "app_url": "https://hsr-rsc-prod3.mayo.edu:1919/content/0fa47c77-b33e-432a-bd9d-b0ef393e873d/",
+        "app_id": "0fa47c77-b33e-432a-bd9d-b0ef393e873d",
+        "app_guid": "0fa47c77-b33e-432a-bd9d-b0ef393e873d",
+        "title": "TRADER_streamlit",
+        "app_mode": "python-streamlit",
+        "app_store_version": 1
+    }
+}
