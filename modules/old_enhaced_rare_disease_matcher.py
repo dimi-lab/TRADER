@@ -4,11 +4,11 @@ import re
 import time
 from datetime import date
 from ui.components import (
-    display_results_with_download,
+    display_file_uploader_with_preview, display_results_with_download,
     create_loading_context, update_progress, simulate_progress_with_delay
 )
 from utils.enhanced_data_utils import (
-    clean_column, load_backend_gene_disease_database,
+    clean_column, load_patient_data, load_backend_gene_disease_database,
     load_backend_orphan_drugs_database, validate_file_structure
 )
 
@@ -57,20 +57,23 @@ def process_rare_disease_matching(patients_df):
     
     return matches
 
-def run_rare_disease_match_with_data(patient_data):
-    """Enhanced rare disease matcher using provided patient data"""
+def run_rare_disease_match():
+    """Enhanced rare disease matcher with backend database integration"""
     
-    if patient_data.empty:
-        st.warning("⚠️ No patient data provided. Please enter patient data in the main input section above.")
-        return
+    st.markdown("**💊 Rare Disease Drug Matcher**")
+    st.markdown("*Connect patients with FDA-designated orphan drugs using integrated gene-disease databases*")
     
-    st.markdown("### 💊 Rare Disease Drug Matcher")
-    st.markdown("*Using the patient data from above to find FDA-designated orphan drugs*")
-    
-    # Show current patient data summary
-    st.info(f"📊 **Current Dataset:** {len(patient_data)} patients loaded")
+    # Patient file upload with enhanced preview
+    st.markdown("**📁 Patient Data Upload**")
+    patient_file = display_file_uploader_with_preview(
+        "Upload Patient VCF File", 
+        ['tsv', 'txt', 'vcf'], 
+        'patient_vcf_rare_enhanced',
+        "Patient genetic data file with PatientID, Gene, and Phenotype columns"
+    )
     
     # Backend Database status check
+    st.markdown("---")
     st.markdown("**📊 Backend Database Status**")
     
     col1, col2 = st.columns(2)
@@ -99,15 +102,21 @@ def run_rare_disease_match_with_data(patient_data):
     st.markdown("---")
     
     # Enhanced matching button
-    if st.button("🔬 **Run Comprehensive Drug Matching**", use_container_width=True, key="start_drug_matching"):
+    if st.button("🔬 **Run Comprehensive Drug Matching**", use_container_width=True):
+        if not patient_file:
+            st.error("❌ Please upload patient data first.")
+            return
+        
         with create_loading_context("Loading backend databases and analyzing rare disease drug matches..."):
             try:
-                # Validate patient data structure
-                if not validate_file_structure(patient_data, ['PatientID', 'Gene'], "Patient"):
+                # Load and validate patient data
+                patients_df = load_patient_data(patient_file)
+                
+                if not validate_file_structure(patients_df, ['PatientID', 'Gene', 'Phenotype'], "Patient"):
                     return
                 
                 # Process matching with backend databases
-                matches = process_rare_disease_matching(patient_data)
+                matches = process_rare_disease_matching(patients_df)
                 
                 # Prepare comprehensive statistics and insights
                 additional_info = []
@@ -130,7 +139,7 @@ def run_rare_disease_match_with_data(patient_data):
                         additional_info.append(f"🦠 **{unique_diseases}** distinct disease types matched")
                     
                     additional_info.extend([
-                        f"👥 **Patients Processed:** {len(patient_data)}",
+                        f"👥 **Patients Processed:** {len(patients_df)}",
                         f"💊 **Unique Drugs Found:** {unique_drugs}"
                     ])
                     
@@ -153,13 +162,5 @@ def run_rare_disease_match_with_data(patient_data):
             
             except Exception as e:
                 st.error(f"❌ Error processing rare disease matches: {str(e)}")
-                st.exception(e)
 
-# Keep the old function for backward compatibility
-def run_rare_disease_match():
-    """Legacy function - redirects to the unified version"""
-    if 'patient_data' in st.session_state and not st.session_state['patient_data'].empty:
-        run_rare_disease_match_with_data(st.session_state['patient_data'])
-    else:
-        st.warning("⚠️ No patient data available. Please enter patient data in the main input section.")
-        
+                

@@ -2,12 +2,10 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 from ui.components import (
-    display_results_with_download,
+    display_file_uploader_with_preview, display_results_with_download,
     create_loading_context, update_progress
 )
-from utils.enhanced_data_utils import (
-    load_backend_reactor_database, filter_valid_patients, validate_file_structure
-)
+from utils.enhanced_data_utils import load_patient_data, load_backend_reactor_database, filter_valid_patients
 
 def compare_with_reactor_database(current_df, reactor_df):
     """Compare current patient data with REACTOR database to find new matches"""
@@ -26,20 +24,21 @@ def compare_with_reactor_database(current_df, reactor_df):
 
     return new_matches, current_df, reactor_df
 
-def run_file_comparison_with_data(patient_data):
-    """Enhanced file comparison using provided patient data"""
+def run_file_comparison():
+    """Enhanced file comparison with REACTOR backend database integration"""
+    st.markdown("**REACTOR - Reanalysis Engine for Assessing Clinical Trials in Orphan Rare Diseases**")
+    st.markdown("*Compare your current patient data against the integrated REACTOR database*")
     
-    if patient_data.empty:
-        st.warning("⚠️ No patient data provided. Please enter patient data in the main input section above.")
-        return
-    
-    st.markdown("### 📊 Dataset Comparison Tool (REACTOR)")
-    st.markdown("*Using the patient data from above to compare against REACTOR database*")
-    
-    # Show current patient data summary
-    st.info(f"📊 **Current Dataset:** {len(patient_data)} patients loaded")
+    st.markdown("**📁 Current Patient Data**")
+    current_file = display_file_uploader_with_preview(
+        "Upload Current Patient Dataset", 
+        ["csv", 'txt'], 
+        "current_patient_data",
+        "Upload your current patient dataset to compare against REACTOR database"
+    )
 
     # Backend Database Status
+    st.markdown("---")
     st.markdown("**🗄️ REACTOR Database Status**")
     
     col1, col2 = st.columns(2)
@@ -57,11 +56,18 @@ def run_file_comparison_with_data(patient_data):
 
     st.markdown("---")
 
-    if st.button("🔄 **Compare with REACTOR Database**", use_container_width=True, key="start_reactor_comparison"):
+    if st.button("🔄 **Compare with REACTOR Database**", use_container_width=True):
+        if not current_file:
+            st.error("❌ Please upload current patient data for comparison.")
+            return
+
         with create_loading_context("Loading REACTOR database and analyzing differences..."):
             try:
-                # Validate patient data structure
-                if not validate_file_structure(patient_data, ['PatientID', 'Gene'], "Patient"):
+                # Load current patient data
+                current_df = load_patient_data(current_file)
+                
+                if current_df.empty:
+                    st.error("❌ Current patient file could not be loaded properly.")
                     return
                 
                 # Load backend REACTOR database
@@ -71,7 +77,7 @@ def run_file_comparison_with_data(patient_data):
                     return
                 
                 # Compare datasets
-                new_matches, clean_current, clean_reactor = compare_with_reactor_database(patient_data, reactor_df)
+                new_matches, clean_current, clean_reactor = compare_with_reactor_database(current_df, reactor_df)
                 
                 # Prepare additional statistics
                 additional_info = [
@@ -95,13 +101,3 @@ def run_file_comparison_with_data(patient_data):
 
             except Exception as e:
                 st.error(f"❌ Error comparing with REACTOR database: {str(e)}")
-                st.exception(e)
-
-# Keep the old function for backward compatibility
-def run_file_comparison():
-    """Legacy function - redirects to the unified version"""
-    if 'patient_data' in st.session_state and not st.session_state['patient_data'].empty:
-        run_file_comparison_with_data(st.session_state['patient_data'])
-    else:
-        st.warning("⚠️ No patient data available. Please enter patient data in the main input section.")
-        

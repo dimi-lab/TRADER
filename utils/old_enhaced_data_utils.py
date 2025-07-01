@@ -1,3 +1,8 @@
+import pandas as pd
+import streamlit as st
+import re
+from pathlib import Path
+
 import streamlit as st
 import pandas as pd
 import io
@@ -202,18 +207,17 @@ def standardize_patient_data(df):
         st.error(f"Error standardizing data: {str(e)}")
         return pd.DataFrame()
 
-def create_enhanced_patient_input(module_name="general"):
-    """Create enhanced patient input interface with unique keys"""
+def create_enhanced_patient_input():
+    """Create enhanced patient input interface with multiple options"""
     
     st.markdown("**📁 Patient Data Input**")
     st.markdown("*Choose your preferred method to input patient genetic data*")
     
-    # Input method selection with unique key
+    # Input method selection
     input_method = st.radio(
         "Select input method:",
         ["📄 Upload File", "✏️ Text Input"],
-        horizontal=True,
-        key=f"input_method_{module_name}"  # UNIQUE KEY ADDED
+        horizontal=True
     )
     
     patient_data = pd.DataFrame()
@@ -224,8 +228,7 @@ def create_enhanced_patient_input(module_name="general"):
         uploaded_file = st.file_uploader(
             "Upload Patient Data File",
             type=['vcf', 'csv', 'tsv', 'txt', 'xlsx', 'xls'],
-            help="Upload a file containing PatientID, Gene, and Phenotype data",
-            key=f"file_uploader_{module_name}"  # UNIQUE KEY ADDED
+            help="Upload a file containing PatientID, Gene, and Phenotype data"
         )
         
         if uploaded_file:
@@ -263,15 +266,14 @@ def create_enhanced_patient_input(module_name="general"):
 Patient002	TP53	Li-Fraumeni syndrome
 Patient003	CFTR	Cystic fibrosis"""
         
-        with st.expander("📋 Show Example Format", expanded=False):
+        with st.expander("📋 Show Example Format"):
             st.code(example_text, language="text")
             st.markdown("**Supported separators:** Tabs, commas, semicolons, pipes (|), or spaces")
         
         text_input = st.text_area(
             "Enter patient data:",
             height=200,
-            placeholder="Patient001\tBRCA1\tBreast cancer\nPatient002\tTP53\tLi-Fraumeni syndrome\n...",
-            key=f"text_input_{module_name}"  # UNIQUE KEY ADDED
+            placeholder="Patient001\tBRCA1\tBreast cancer\nPatient002\tTP53\tLi-Fraumeni syndrome\n..."
         )
         
         if text_input.strip():
@@ -312,12 +314,11 @@ Patient003	CFTR	Cystic fibrosis"""
             st.metric("Missing Phenotypes", missing_phenotypes)
         
         # Option to edit data
-        if st.checkbox("🖊️ Edit data before processing", key=f"edit_checkbox_{module_name}"):
+        if st.checkbox("🖊️ Edit data before processing"):
             patient_data = st.data_editor(
                 patient_data,
                 use_container_width=True,
-                num_rows="dynamic",
-                key=f"data_editor_{module_name}"  # UNIQUE KEY ADDED
+                num_rows="dynamic"
             )
         
         # Final validation
@@ -335,6 +336,7 @@ Patient003	CFTR	Cystic fibrosis"""
             return pd.DataFrame()
     
     return patient_data
+
 
 def clean_column(text):
     """Clean text data for matching"""
@@ -466,28 +468,15 @@ def load_backend_trial_database(check_only=False):
                     return len(db)
                 return db
         
-        # Fallback to file loading with multiple encodings
+        # Fallback to file loading
         base_path = Path(__file__).parent.parent
         file_path = base_path / 'matched_clinical_trials_20240716_cleaned.test.csv'
         
         if file_path.exists():
-            # Try multiple encodings
-            encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
-            
-            for encoding in encodings:
-                try:
-                    df = pd.read_csv(file_path, encoding=encoding)
-                    if check_only:
-                        return len(df)
-                    return df
-                except UnicodeDecodeError:
-                    continue
-            
-            # If no encoding worked
+            df = pd.read_csv(file_path, encoding='utf-8')
             if check_only:
-                raise Exception("Could not decode file with any encoding")
-            st.error("Could not decode clinical trials file with any standard encoding")
-            return pd.DataFrame()
+                return len(df)
+            return df
         else:
             if check_only:
                 return 0
@@ -510,28 +499,15 @@ def load_backend_gene_disease_database(check_only=False):
                     return len(db)
                 return db
         
-        # Fallback to file loading with multiple encodings
+        # Fallback to file loading
         base_path = Path(__file__).parent.parent
         file_path = base_path / 'gene_disease.test.txt'
         
         if file_path.exists():
-            # Try multiple encodings
-            encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
-            
-            for encoding in encodings:
-                try:
-                    df = pd.read_csv(file_path, sep='\t', encoding=encoding)
-                    if check_only:
-                        return len(df)
-                    return df
-                except UnicodeDecodeError:
-                    continue
-            
-            # If no encoding worked
+            df = pd.read_csv(file_path, sep='\t', encoding='utf-8')
             if check_only:
-                raise Exception("Could not decode file with any encoding")
-            st.error("Could not decode gene-disease file with any standard encoding")
-            return pd.DataFrame()
+                return len(df)
+            return df
         else:
             if check_only:
                 return 0
@@ -554,28 +530,15 @@ def load_backend_orphan_drugs_database(check_only=False):
                     return len(db)
                 return db
         
-        # Fallback to file loading with multiple encodings
+        # Fallback to file loading
         base_path = Path(__file__).parent.parent
         file_path = base_path / 'orphan_drugs.test.txt'
         
         if file_path.exists():
-            # Try multiple encodings
-            encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
-            
-            for encoding in encodings:
-                try:
-                    df = pd.read_csv(file_path, sep='\t', encoding=encoding)
-                    if check_only:
-                        return len(df)
-                    return df
-                except UnicodeDecodeError:
-                    continue
-            
-            # If no encoding worked
+            df = pd.read_csv(file_path, sep='\t', encoding='utf-8')
             if check_only:
-                raise Exception("Could not decode file with any encoding")
-            st.error("Could not decode orphan drugs file with any standard encoding")
-            return pd.DataFrame()
+                return len(df)
+            return df
         else:
             if check_only:
                 return 0
@@ -598,28 +561,15 @@ def load_backend_reactor_database(check_only=False):
                     return len(db)
                 return db
         
-        # Fallback to file loading with multiple encodings
+        # Fallback to file loading
         base_path = Path(__file__).parent.parent
         file_path = base_path / 'rare_disease_matches_20240716_cleaned.test.csv'
         
         if file_path.exists():
-            # Try multiple encodings
-            encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
-            
-            for encoding in encodings:
-                try:
-                    df = pd.read_csv(file_path, encoding=encoding)
-                    if check_only:
-                        return len(df)
-                    return df
-                except UnicodeDecodeError:
-                    continue
-            
-            # If no encoding worked
+            df = pd.read_csv(file_path, encoding='utf-8')
             if check_only:
-                raise Exception("Could not decode file with any encoding")
-            st.error("Could not decode REACTOR file with any standard encoding")
-            return pd.DataFrame()
+                return len(df)
+            return df
         else:
             if check_only:
                 return 0
