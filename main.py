@@ -73,8 +73,8 @@ def load_backend_databases():
     base_path = Path(__file__).parent
     files_to_load = {
         'clinical_trials': base_path / 'matched_clinical_trials_20240716_cleaned.csv',
-        'gene_disease': base_path / 'gene_disease.test.txt',
-        'orphan_drugs': base_path / 'orphan_drugs.test.txt',
+        'gene_disease': base_path / 'gene_disease.txt',
+        'orphan_drugs': base_path / 'orphan_drugs.txt',
         'rare_disease_matches': base_path / 'rare_disease_matches_20240716_cleaned.csv'
     }
     
