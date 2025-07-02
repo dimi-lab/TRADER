@@ -468,7 +468,7 @@ def load_backend_trial_database(check_only=False):
         
         # Fallback to file loading with multiple encodings
         base_path = Path(__file__).parent.parent
-        file_path = base_path / 'matched_clinical_trials_20240716_cleaned.test.csv'
+        file_path = base_path / 'matched_clinical_trials_20240716_cleaned.csv'
         
         if file_path.exists():
             # Try multiple encodings
@@ -512,7 +512,7 @@ def load_backend_gene_disease_database(check_only=False):
         
         # Fallback to file loading with multiple encodings
         base_path = Path(__file__).parent.parent
-        file_path = base_path / 'gene_disease.test.txt'
+        file_path = base_path / 'gene_disease.txt'
         
         if file_path.exists():
             # Try multiple encodings
@@ -556,7 +556,7 @@ def load_backend_orphan_drugs_database(check_only=False):
         
         # Fallback to file loading with multiple encodings
         base_path = Path(__file__).parent.parent
-        file_path = base_path / 'orphan_drugs.test.txt'
+        file_path = base_path / 'orphan_drugs.txt'
         
         if file_path.exists():
             # Try multiple encodings
@@ -600,7 +600,7 @@ def load_backend_reactor_database(check_only=False):
         
         # Fallback to file loading with multiple encodings
         base_path = Path(__file__).parent.parent
-        file_path = base_path / 'rare_disease_matches_20240716_cleaned.test.csv'
+        file_path = base_path / 'rare_disease_matches_20240716_cleaned.csv'
         
         if file_path.exists():
             # Try multiple encodings
